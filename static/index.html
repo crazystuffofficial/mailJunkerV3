@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spam Mail Sender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            height: 100vh;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            padding: 20px 0;
+        }
+        label, input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+        input, button {
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .email-container {
+            margin-bottom: 20px;
+        }
+        .email-input {
+            margin-bottom: 10px;
+        }
+        .remove-button {
+            background-color: #FF0000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            box-sizing: border-box;
+            width: auto;
+            border-radius: 5px;
+        }
+        .remove-button:hover {
+            background-color: #cc0000;
+        }
+        
+    </style>
+    <script>
+        function addEmailInput() {
+            const container = document.createElement('div');
+            container.className = 'email-input';
+
+            const input = document.createElement('input');
+            input.type = 'email';
+            input.name = 'emails';
+            input.placeholder = 'Enter email';
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'remove-button';
+            removeButton.innerText = 'Remove';
+            removeButton.onclick = function() {
+                container.remove();
+            };
+
+            container.appendChild(input);
+            container.appendChild(removeButton);
+
+            document.getElementById('email-container').appendChild(container);
+        }
+
+        function navigateToSpam(event) {
+            event.preventDefault();
+            const emailInputs = document.getElementsByName('emails');
+            const emails = Array.from(emailInputs).map(input => input.value).join(',');
+            const times = document.getElementById('times').value;
+            window.location.href = '/sendMail/' + btoa(emails) + '/' + btoa(times) + '/index.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Spam Mail Sender</h1>
+        <p>Please use this responsibly. I am not responsible for any consequences.</p>
+        <form onsubmit="navigateToSpam(event)">
+            <div id="email-container" class="email-container">
+                <div class="email-input">
+                    <input type="email" name="emails" placeholder="Enter email" required>
+                </div>
+            </div>
+            <button type="button" onclick="addEmailInput()">Add Another Email</button>
+            <label for="times">Times:</label>
+            <input type="number" id="times" name="times" required>
+            <button type="submit">Send Spam</button>
+        </form>
+    </div>
+</body>
+</html>
