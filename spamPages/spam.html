@@ -1,242 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spam Mail Sender</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .status {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 1.2em;
-        }
-        .status.num {
-            color: #2c3e50;
-            background-color: #ecf0f1;
-        }
-        .status.err {
-            color: #c0392b;
-            background-color: #f8d7da;
-        }
-        .status.email {
-            color: #2980b9;
-            background-color: #d6eaf8;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin: 0 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #errors {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #f8d7da;
-            color: #721c24;
-            display: none;
-            white-space: pre-wrap; /* Preserve newlines and whitespace */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="num" class="status num">Loading...</div>
-        <div id="err" class="status err">Loading...</div>
-        <div id="email-statuses"></div>
-        <div class="button-container">
-            <button onclick="show()">Show/Hide Errors</button>
-            <button onclick="stopSpam()">Stop</button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Spam Mail Sender</title>
+        <style>
+            body {
+                font-family: "Arial", sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f8f9fa;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+            .container {
+                width: 90%;
+                max-width: 600px;
+                margin: 20px;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: #ffffff;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            .status {
+                margin-bottom: 20px;
+                padding: 15px;
+                border-radius: 5px;
+                font-size: 1.2em;
+            }
+            .status.num {
+                color: #2c3e50;
+                background-color: #ecf0f1;
+            }
+            .status.err {
+                color: #c0392b;
+                background-color: #f8d7da;
+            }
+            .status.email {
+                color: #2980b9;
+                background-color: #d6eaf8;
+            }
+            .button-container {
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 1em;
+                color: #fff;
+                background-color: #007bff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin: 0 10px;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            #errors {
+                margin-top: 20px;
+                padding: 15px;
+                border-radius: 5px;
+                background-color: #f8d7da;
+                color: #721c24;
+                display: none;
+                white-space: pre-wrap; /* Preserve newlines and whitespace */
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="num" class="status num">Loading...</div>
+            <div id="err" class="status err">Loading...</div>
+            <div id="email-statuses"></div>
+            <div class="button-container">
+                <button onclick="show()">Show/Hide Errors</button>
+                <button onclick="stopSpam()">Stop</button>
+            </div>
+            <div id="errors">Loading...</div>
         </div>
-        <div id="errors">Loading...</div>
-    </div>
 
-    <script>
-        var times = parseInt(atob(location.href.split("/")[5]));
-        var emailList = atob(location.href.split("/")[4]).split(',');
-        var fetching = true;
-        
-        function editEmailContainers(total){
+        <script>
+            var times = parseInt(atob(location.href.split("/")[5]));
+            var emailList = atob(location.href.split("/")[4]).split(",");
+            var fetching = true;
+
+            function editEmailContainers(total) {
+                emailList.forEach((email, index) => {
+                    let emailStatus = document.getElementById(
+                        `email-status-${index}`,
+                    );
+                    if (emailStatus) {
+                        if (index == 0) {
+                            emailStatus.textContent = `Current email: ${email} - Sent: ${total - Math.floor(total / emailList.length) * (emailList.length - 1)}`;
+                        } else {
+                            emailStatus.textContent = `Current email: ${email} - Sent: ${Math.floor(total / emailList.length)}`;
+                        }
+                    }
+                });
+            }
+
             emailList.forEach((email, index) => {
-                let emailStatus = document.getElementById(`email-status-${index}`);
-                if (emailStatus) {
-                    if(index == 0){
-                        emailStatus.textContent = `Current email: ${email} - Sent: ${total - Math.floor(total/emailList.length) * (emailList.length - 1)}`;
-                    } else{
-                        emailStatus.textContent = `Current email: ${email} - Sent: ${Math.floor(total/emailList.length)}`;
-                    }
-                }
+                var statusContainer = document.createElement("div");
+                statusContainer.className = "status email";
+                statusContainer.setAttribute("id", `email-status-${index}`);
+                statusContainer.innerHTML = `Current email: ${email} - Sent: 0`;
+                document
+                    .getElementById("email-statuses")
+                    .appendChild(statusContainer);
             });
-        }
-        
-        emailList.forEach((email, index) => {
-            var statusContainer = document.createElement("div");
-            statusContainer.className = "status email";
-            statusContainer.setAttribute("id", `email-status-${index}`);
-            statusContainer.innerHTML = `Current email: ${email} - Sent: 0`;
-            document.getElementById("email-statuses").appendChild(statusContainer);
-        });
 
-        editEmailContainers(0);
-
-        function initializeEmailStatuses() {
-            const emailStatusesContainer = document.getElementById('email-statuses');
             editEmailContainers(0);
-        }
 
-        function fetchWithTimeout(url, options, timeout = 5000) {
-            const controller = new AbortController();
-            const signal = controller.signal;
+            function initializeEmailStatuses() {
+                const emailStatusesContainer =
+                    document.getElementById("email-statuses");
+                editEmailContainers(0);
+            }
 
-            const fetchPromise = fetch(url, { ...options, signal });
+            function fetchWithTimeout(url, options, timeout = 5000) {
+                const controller = new AbortController();
+                const signal = controller.signal;
 
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => {
-                    controller.abort();
-                    reject(new Error('Fetch timeout'));
-                }, timeout)
-            );
+                const fetchPromise = fetch(url, { ...options, signal });
 
-            return Promise.race([fetchPromise, timeoutPromise]);
-        }
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => {
+                        controller.abort();
+                        reject(new Error("Fetch timeout"));
+                    }, timeout),
+                );
 
-        function fetchData() {
-            if (!fetching) return;
+                return Promise.race([fetchPromise, timeoutPromise]);
+            }
 
-            fetchWithTimeout('/num.txt')
-                .then(response => {
-                    if (response.status === 404) {
-                        fetching = false;
-                        console.log('num.txt not found, stopping fetch.');
-                        document.getElementById('num').textContent = 'Total number of mails sent: ' + times * emailList.length;
-                        editEmailContainers(times * emailList.length);
-                        return null;
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    if (!data) return;
+            function fetchData() {
+                if (!fetching) return;
 
-                    let displayText = data.trim();
-                    document.getElementById('num').textContent = 'Total number of mails sent: ' + displayText;
-                    let emailsSent = parseInt(displayText);
-                    editEmailContainers(emailsSent);
+                fetchWithTimeout("/num.txt")
+                    .then((response) => {
+                        if (response.status === 404) {
+                            fetching = false;
+                            console.log("num.txt not found, stopping fetch.");
+                            document.getElementById("num").textContent =
+                                "Total number of mails sent: " +
+                                times * emailList.length;
+                            editEmailContainers(times * emailList.length);
+                            return null;
+                        }
+                        return response.text();
+                    })
+                    .then((data) => {
+                        if (!data) return;
 
-                    if (parseInt(displayText) >= times * emailList.length) {
+                        let displayText = data.trim();
+                        document.getElementById("num").textContent =
+                            "Total number of mails sent: " + displayText;
+                        let emailsSent = parseInt(displayText);
+                        editEmailContainers(emailsSent);
+
+                        if (parseInt(displayText) >= times * emailList.length) {
+                            fetching = false;
+                            cleanUp();
+                            return;
+                        }
+
+                        fetchWithTimeout("/errs.txt")
+                            .then((response) => {
+                                if (response.status === 404) {
+                                    fetching = false;
+                                    console.log(
+                                        "errs.txt not found, stopping fetch.",
+                                    );
+                                    document.getElementById("num").textContent =
+                                        "Total number of mails sent: " +
+                                        times * emailList.length;
+                                    return null;
+                                }
+                                return response.text();
+                            })
+                            .then((data) => {
+                                if (!data) return;
+                                document.getElementById("err").textContent =
+                                    "Mails failed due to an error: " + data;
+                            })
+                            .catch((error) =>
+                                console.error(
+                                    "Error fetching errs.txt:",
+                                    error,
+                                ),
+                            );
+
+                        fetchWithTimeout("/errmessages.txt")
+                            .then((response) => {
+                                if (response.status === 404) {
+                                    fetching = false;
+                                    console.log(
+                                        "errmessages.txt not found, stopping fetch.",
+                                    );
+                                    document.getElementById("num").textContent =
+                                        "Total number of mails sent: " +
+                                        times * emailList.length;
+                                    return null;
+                                }
+                                return response.text();
+                            })
+                            .then((data) => {
+                                if (!data) data = "None";
+                                document.getElementById("errors").textContent =
+                                    data;
+                            })
+                            .catch((error) =>
+                                console.error(
+                                    "Error fetching errmessages.txt:",
+                                    error,
+                                ),
+                            );
+
+                        setTimeout(fetchData, 1000);
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching num.txt:", error);
+                        setTimeout(fetchData, 1000);
+                    });
+            }
+
+            fetchData();
+
+            function show() {
+                const errorsElement = document.querySelector("#errors");
+                errorsElement.style.display =
+                    errorsElement.style.display === "none" ? "block" : "none";
+            }
+
+            function stopSpam() {
+                fetch("/stopSpam", { method: "POST" })
+                    .then((response) => response.text())
+                    .then((data) => {
+                        alert(data);
                         fetching = false;
                         cleanUp();
-                        return;
-                    }
+                    })
+                    .catch((error) =>
+                        console.error("Error stopping spam:", error),
+                    );
+            }
 
-                    fetchWithTimeout('/errs.txt')
-                        .then(response => {
-                            if (response.status === 404) {
-                                fetching = false;
-                                console.log('errs.txt not found, stopping fetch.');
-                                document.getElementById('num').textContent = 'Total number of mails sent: ' + times * emailList.length;
-                                return null;
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            if (!data) return;
-                            document.getElementById('err').textContent = 'Mails failed due to an error: ' + data;
-                        })
-                        .catch(error => console.error('Error fetching errs.txt:', error));
-
-                    fetchWithTimeout('/errmessages.txt')
-                        .then(response => {
-                            if (response.status === 404) {
-                                fetching = false;
-                                console.log('errmessages.txt not found, stopping fetch.');
-                                document.getElementById('num').textContent = 'Total number of mails sent: ' + times * emailList.length;
-                                return null;
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            if (!data) data = "None";
-                            document.getElementById('errors').textContent = data;
-                        })
-                        .catch(error => console.error('Error fetching errmessages.txt:', error));
-
-                    setTimeout(fetchData, 1000);
+            function cleanUp() {
+                fetch("/cleanUp", {
+                    method: "POST",
                 })
-                .catch(error => {
-                    console.error('Error fetching num.txt:', error);
-                    setTimeout(fetchData, 1000);
-                });
-        }
+                    .then((response) => response.text())
+                    .then((data) => {
+                        console.log(data);
+                    })
+                    .catch((error) =>
+                        console.error("Error during cleanup:", error),
+                    );
+            }
 
-        fetchData();
-
-        function show() {
-            const errorsElement = document.querySelector("#errors");
-            errorsElement.style.display = errorsElement.style.display === "none" ? "block" : "none";
-        }
-
-        function stopSpam() {
-            fetch('/stopSpam', { method: 'POST' })
-                .then(response => response.text())
-                .then(data => {
-                    alert(data);
-                    fetching = false;
-                    cleanUp();
-                })
-                .catch(error => console.error('Error stopping spam:', error));
-        }
-
-        function cleanUp() {
-            fetch('/cleanUp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id1: location.href.split("/")[4],
-                    id2: location.href.split("/")[5]
-                })
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data);
-            })
-            .catch(error => console.error('Error during cleanup:', error));
-        }
-
-        initializeEmailStatuses();
-    </script>
-</body>
+            initializeEmailStatuses();
+        </script>
+    </body>
 </html>
