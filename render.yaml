@@ -1,0 +1,6 @@
+ services:
+  - type: web
+    name: mail-junker
+    env: node
+    plan: free
+    startCommand: npm install && node index.js
