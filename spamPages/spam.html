@@ -147,9 +147,6 @@
                         if (response.status === 404) {
                             fetching = false;
                             console.log("num.txt not found, stopping fetch.");
-                            document.getElementById("num").textContent =
-                                "Total number of mails sent: " +
-                                times * emailList.length;
                             editEmailContainers(times * emailList.length);
                             return null;
                         }
@@ -177,9 +174,6 @@
                                     console.log(
                                         "errs.txt not found, stopping fetch.",
                                     );
-                                    document.getElementById("num").textContent =
-                                        "Total number of mails sent: " +
-                                        times * emailList.length;
                                     return null;
                                 }
                                 return response.text();
@@ -203,9 +197,6 @@
                                     console.log(
                                         "errmessages.txt not found, stopping fetch.",
                                     );
-                                    document.getElementById("num").textContent =
-                                        "Total number of mails sent: " +
-                                        times * emailList.length;
                                     return null;
                                 }
                                 return response.text();
