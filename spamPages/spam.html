@@ -222,11 +222,11 @@
                                 ),
                             );
 
-                        setTimeout(fetchData, 1000);
+                        fetchData();
                     })
                     .catch((error) => {
                         console.error("Error fetching num.txt:", error);
-                        setTimeout(fetchData, 1000);
+                        fetchData();
                     });
             }
 
