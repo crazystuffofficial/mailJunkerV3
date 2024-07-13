@@ -133,14 +133,6 @@ app.get("/sendMail/:id1/:id2/index.html", (req, res) => {
     }
 });
 
-app.get("/sendMail/:id1/:id2/:id3", (req, res) => {
-    try {
-        res.sendFile(path.join(__dirname, req.url));
-    } catch (e) {
-        res.status(500).send("ERROR: " + e.message);
-    }
-});
-
 // Endpoint to stop the spam operation
 app.post("/stopSpam", (req, res) => {
     stopFlag = true;
