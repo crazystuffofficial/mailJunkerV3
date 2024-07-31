@@ -1,5 +1,5 @@
 const widgetResponse = await axios.get("https://raw.githubusercontent.com/crazystuffofficial/mailJunkerV3/main/widgets.txt");
-const widgetArray = eval(widgetResponse.text());
+const widgetArray = eval(widgetResponse.data);
 const currentWidget = widgetArray[Math.floor(Math.random() * widgetArray.length)];
 const tokenResponse = await axios.get('https://www.cbsnews.com/newsletters/xhr/token', {
   headers: {
