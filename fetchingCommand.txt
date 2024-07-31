@@ -1,0 +1,24 @@
+const tokenResponse = await axios.get("https://www.cbsnews.com/newsletters/xhr/token");
+const token = tokenResponse.data.token;
+const response = await axios.post(
+    'https://www.cbsnews.com/newsletters/xhr/signup',
+    `{"email":"${theemail}","sub":"m40186,m40183","token":"${token}","mCodeOptin":"m40183"}`, {
+        headers: {
+            'accept': '*/*',
+            'accept-language': 'en-US,en;q=0.9',
+            'content-type': 'text/plain',
+            'dnt': '1',
+            'origin': 'https://www.cbsnews.com',
+            'priority': 'u=1, i',
+            'referer': 'https://www.cbsnews.com/embed/newsletters/widget?v=2287029998c5246c93d6dd038eb30603&subs=m40186',
+            'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+        }
+    }
+);
+return response;
