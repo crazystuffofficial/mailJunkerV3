@@ -1,42 +1,35 @@
-const widgetResponse = await axios.get("https://raw.githubusercontent.com/crazystuffofficial/mailJunkerV3/main/widgets.txt");
-const widgetArray = eval(widgetResponse.data);
-const currentWidget = widgetArray[Math.floor(Math.random() * widgetArray.length)];
-const tokenResponse = await axios.get('https://www.cbsnews.com/newsletters/xhr/token', {
-  headers: {
-    'accept': '*/*',
-    'accept-language': 'en-US,en;q=0.9',
-    'dnt': '1',
-    'priority': 'u=1, i',
-    'referer': currentWidget,
-    'sec-ch-ua': '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
-  }
-});
-const token = tokenResponse.data.token;
 const response = await axios.post(
-    'https://www.cbsnews.com/newsletters/xhr/signup',
-    `{"email":"${theemail}","sub":"m40186,m40183","token":"${token}","mCodeOptin":"m40183"}`, {
-        headers: {
-            'accept': '*/*',
-            'accept-language': 'en-US,en;q=0.9',
-            'content-type': 'text/plain',
-            'dnt': '1',
-            'origin': 'https://www.cbsnews.com',
-            'priority': 'u=1, i',
-            'referer': currentWidget,
-            'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-        }
+  'https://www.cbssports.com/fantasy/newsletter-sign-up/xhr/',
+  new URLSearchParams({
+    'action': 'optIn',
+    'custId': '',
+    'destination': 'cbs',
+    'masterProductId': '23708',
+    'mCode': 'm23661',
+    'source': 'nlsplash',
+    'userLogin': '',
+    'emailAddress': theemail
+  }),
+  {
+    headers: {
+      'accept': '*/*',
+      'accept-language': 'en-US,en;q=0.9',
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'dnt': '1',
+      'origin': 'https://www.cbssports.com',
+      'pragma': 'no-cache',
+      'priority': 'u=1, i',
+      'referer': 'https://www.cbssports.com/newsletters/cbs-sports-hq/',
+      'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      'x-requested-with': 'XMLHttpRequest'
     }
+  }
 );
-return response;
+return response
