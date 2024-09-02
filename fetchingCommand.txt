@@ -1,7 +1,6 @@
 var promises = [];
 for(var email of theemail){
-promises.push(
-axios.post(
+var promise = axios.post(
   'https://www.cbssports.com/fantasy/newsletter-sign-up/xhr/',
   new URLSearchParams({
     'action': 'optIn',
@@ -35,7 +34,7 @@ axios.post(
     }
   }
 );
-);
+promises.push(promise);
 }
 var response = await Promise.all(promises);
 return response;
