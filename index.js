@@ -39,7 +39,7 @@ async function spam(sessionId, theemail) {
 
 function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
     let spamCount = 0;
-    var totalSpams = emailsToSpam;
+    var totalSpams = emailsToSpam * emails.length;
     let startCount = 0;
     var throttleSpeed = Math.min(Math.ceil(Math.sqrt(totalSpams)), maximumThrottleSpeed);
     var intervalId = setInterval(() => {
@@ -53,7 +53,7 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
                 spam(sessionId, emails).then(() => {
                     spamCount += emails.length;
                 });
-                startCount++;
+                startCount += emails.length;
             }
         }
     }, interval);
