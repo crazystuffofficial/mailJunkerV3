@@ -2,7 +2,7 @@ var express = require("express");
 var axios = require("axios");
 var path = require("path");
 var {v4: uuidv4} = require("uuid"); // for generating unique session IDs
-var maximumThrottleSpeed = 10000;
+var maximumThrottleSpeed = 1000;
 var app = express();
 let stopFlag = false;
 
