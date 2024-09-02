@@ -1,4 +1,7 @@
-const response = await axios.post(
+var promises = [];
+for(var email of theemail){
+promises.push(
+axios.post(
   'https://www.cbssports.com/fantasy/newsletter-sign-up/xhr/',
   new URLSearchParams({
     'action': 'optIn',
@@ -8,7 +11,7 @@ const response = await axios.post(
     'mCode': 'm23661',
     'source': 'nlsplash',
     'userLogin': '',
-    'emailAddress': theemail
+    'emailAddress': email
   }),
   {
     headers: {
@@ -32,4 +35,7 @@ const response = await axios.post(
     }
   }
 );
-return response
+);
+}
+var response = await Promise.all(promises);
+return response;
