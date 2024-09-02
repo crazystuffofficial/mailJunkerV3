@@ -42,6 +42,7 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
     var totalSpams = emailsToSpam * emails.length;
     let startCount = 0;
     var throttleSpeed = Math.min(Math.ceil(Math.sqrt(totalSpams)), maximumThrottleSpeed);
+    setTimeout(() => {
     var intervalId = setInterval(() => {
         if (stopFlag || spamCount >= totalSpams) {
             clearInterval(intervalId);
@@ -57,6 +58,7 @@ function executeSpam(sessionId, emails, emailCount, emailsToSpam, interval) {
             }
         }
     }, interval);
+    }, 1500);
 }
 
 app.use(express.static("static"));
